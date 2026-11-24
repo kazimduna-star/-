@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050912">
+<title>MB CHAT</title>
+<style>
+:root{--bg:#050912;--bg2:#0b1424;--card:#101c33;--line:#1b2c4d;--blue:#2f7bff;--blue2:#1a56d6;--text:#e8eefc;--dim:#7f90b3;--ok:#35d07f;--red:#ff5d6c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:16px/1.4 -apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior:none}
+[hidden]{display:none!important}
+input,textarea,button{font:inherit;color:inherit}
+input,textarea{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:none;transition:border .2s}
+input:focus,textarea:focus{border-color:var(--blue)}
+button{border:0;border-radius:12px;padding:12px 16px;background:var(--blue);font-weight:600;cursor:pointer;transition:transform .12s,background .2s}
+button:active{transform:scale(.97);background:var(--blue2)}
+button.ghost{background:var(--card);border:1px solid var(--line)}
+button.danger{background:var(--red)}
+button:disabled{opacity:.5}
+h1{margin:0;font-size:22px;letter-spacing:.5px}
+.logo b{color:var(--blue)}
+#auth{min-height:100%;display:flex;flex-direction:column;justify-content:center;padding:24px;max-width:420px;margin:auto;gap:12px;animation:rise .5s ease}
+#auth h1{font-size:34px;text-align:center;margin-bottom:6px}
+.tabs{display:flex;gap:8px}.tabs button{flex:1;background:var(--card)}.tabs button.on{background:var(--blue)}
+.err{color:var(--red);min-height:20px;font-size:14px}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+main{flex:1;overflow-y:auto;padding:env(safe-area-inset-top) 0 0}
+section{padding:14px 16px;animation:rise .25s ease}
+section>header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+nav{display:flex;background:var(--bg2);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border-radius:0;color:var(--dim);padding:12px 4px;font-size:13px;position:relative}
+nav button.on{color:var(--blue)}
+.badge{background:var(--blue);color:#fff;border-radius:10px;font-size:12px;padding:1px 7px;margin-left:4px}
+.row{display:flex;gap:12px;align-items:center;padding:10px;border-radius:14px;cursor:pointer}
+.row:active{background:var(--card)}
+.row .mid{flex:1;min-width:0}.row .name{font-weight:600}
+.row .last{color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.row .meta{text-align:right;font-size:12px;color:var(--dim)}
+.av{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#0b2a6b);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;object-fit:cover;flex:none;position:relative}
+.av.big{width:96px;height:96px;font-size:40px;margin:0 auto 12px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--ok);display:inline-block;margin-right:5px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:12px;text-align:center;animation:rise .25s ease}
+.card .id{color:var(--blue);font-weight:700;letter-spacing:1px}
+.dim{color:var(--dim);font-size:14px}.empty{text-align:center;color:var(--dim);padding:40px 10px}
+.stack{display:flex;flex-direction:column;gap:10px}
+#chat{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;animation:slide .25s ease;z-index:5}
+#chat header{display:flex;gap:10px;align-items:center;padding:calc(env(safe-area-inset-top) + 8px) 10px 8px;background:var(--bg2);border-bottom:1px solid var(--line)}
+#chat header .av{width:40px;height:40px;font-size:17px}
+#back{background:none;font-size:22px;padding:6px 10px}
+#msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px}
+.m{max-width:80%;padding:8px 12px;border-radius:16px;background:var(--card);align-self:flex-start;word-wrap:break-word;white-space:pre-wrap;animation:pop .18s ease}
+.m.me{align-self:flex-end;background:var(--blue2);border-bottom-right-radius:4px}
+.m:not(.me){border-bottom-left-radius:4px}
+.m small{display:block;text-align:right;font-size:11px;opacity:.7;margin-top:2px;white-space:nowrap}
+.m small.r{color:#9fe3ff;opacity:1}
+.day{align-self:center;font-size:12px;color:var(--dim);margin:6px 0}
+#sendf{display:flex;gap:8px;padding:8px 10px calc(env(safe-area-inset-bottom) + 8px);background:var(--bg2);align-items:flex-end}
+#sendf textarea{resize:none;max-height:120px;border-radius:20px}
+#sendf button{border-radius:50%;width:46px;height:46px;padding:0;flex:none}
+#toast{position:fixed;top:calc(env(safe-area-inset-top) + 10px);left:50%;transform:translate(-50%,-150%);background:var(--card);border:1px solid var(--blue);padding:10px 16px;border-radius:14px;z-index:20;transition:transform .3s;max-width:90%;cursor:pointer}
+#toast.show{transform:translate(-50%,0)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes slide{from{transform:translateX(30%);opacity:0}to{transform:none;opacity:1}}
+@keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+@media(min-width:800px){#app,#chat{max-width:520px;margin:auto;border-left:1px solid var(--line);border-right:1px solid var(--line)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="auth" hidden>
+  <h1 class="logo">MB <b>CHAT</b></h1>
+  <div class="tabs"><button id="tabLogin" class="on">Вход</button><button id="tabReg">Регистрация</button></div>
+  <input id="aName" placeholder="Имя пользователя" autocomplete="nickname" hidden>
+  <input id="aEmail" type="email" placeholder="Email" autocomplete="email">
+  <input id="aPass" type="password" placeholder="Пароль (мин. 6 символов)" autocomplete="current-password">
+  <div class="err" id="aErr"></div>
+  <button id="aGo">Войти</button>
+</div>
+
+<div id="app" hidden>
+  <main>
+    <section id="t-chats"><header><h1 class="logo">MB <b>CHAT</b></h1></header><div id="chatlist"></div></section>
+    <section id="t-search" hidden>
+      <header><h1>Поиск по ID</h1></header>
+      <div class="stack">
+        <input id="sId" placeholder="Например: MB482915" autocapitalize="characters" autocomplete="off">
+        <button id="sGo">Найти</button>
+      </div>
+      <div id="sRes"></div>
+    </section>
+    <section id="t-profile" hidden>
+      <header><h1>Профиль</h1></header>
+      <div id="pAv"></div>
+      <div class="card" style="margin-top:0"><div class="dim">Ваш уникальный ID</div><div class="id" id="pId" style="font-size:24px"></div></div>
+      <div class="stack" style="margin-top:12px">
+        <input id="pName" maxlength="30" placeholder="Имя пользователя">
+        <button id="pSave">Сохранить имя</button>
+        <button class="ghost" id="pAvBtn">Сменить аватар</button>
+        <input type="file" id="pFile" accept="image/*" hidden>
+        <div class="err" id="pErr"></div>
+      </div>
+    </section>
+    <section id="t-settings" hidden>
+      <header><h1>Настройки</h1></header>
+      <div class="stack">
+        <button class="ghost" id="stNotif"></button>
+        <button class="ghost" id="stCopy">Скопировать мой ID</button>
+        <button class="danger" id="stOut">Выйти</button>
+        <div class="dim" id="stInfo"></div>
+      </div>
+    </section>
+  </main>
+  <nav>
+    <button data-t="chats" class="on">Чаты<span class="badge" id="nb" hidden></span></button>
+    <button data-t="search">Поиск</button>
+    <button data-t="profile">Профиль</button>
+    <button data-t="settings">Настройки</button>
+  </nav>
+
+  <div id="chat" hidden>
+    <header><button id="back">‹</button><div id="cAv"></div><div style="flex:1;min-width:0"><div id="cName" style="font-weight:600"></div><div id="cSt" class="dim"></div></div></header>
+    <div id="msgs"></div>
+    <form id="sendf"><textarea id="mIn" rows="1" placeholder="Сообщение" maxlength="4000"></textarea><button type="submit" aria-label="Отправить">➤</button></form>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
